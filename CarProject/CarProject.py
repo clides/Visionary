@@ -10,7 +10,7 @@ import time
 cap = cv2.VideoCapture("CarProject1.mp4")  # For Video
  
  
-model = YOLO("../Yolo-Weights/yolov8n.pt")
+model = YOLO("yolov8n.pt")
  
 classNames = ["person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", "truck", "boat",
               "traffic light", "fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat",
@@ -26,12 +26,24 @@ classNames = ["person", "bicycle", "car", "motorbike", "aeroplane", "bus", "trai
  
 prev_frame_time = 0
 new_frame_time = 0
- 
+
+videoWidth = cap.get(3)
+videoHeight = cap.get(4)
+# print(videoWidth, videoHeight) # width = 1280 height = 720
+
 while True:
     new_frame_time = time.time()
     success, img = cap.read()
-    results = model(img, stream=True, device="mps")
-    
+    results = model(img, stream=True, device="mps") # uses metal (aka mac gpu) if you are using windows and have nvidea gpu, install cuda and config it accordingly
+
+    # Draw lines to represent the boundaries for flagging nearby vehicles
+    leftLineFirst = (50, 550)
+    leftLineLast = (500, 550)
+    rightLineFirst = (780, 550)
+    rightLineLast = (1230, 550)
+    cv2.line(img, leftLineFirst, leftLineLast, (255, 0, 0), 3)
+    cv2.line(img, rightLineFirst, rightLineLast, (255, 0, 0), 3)
+
     for r in results:
         boxes = r.boxes
         
@@ -55,7 +67,7 @@ while True:
  
     fps = 1 / (new_frame_time - prev_frame_time)
     prev_frame_time = new_frame_time
-    print(fps)
+    cv2.putText(img, f'FPS: {int(fps)}', (30, 40), fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1, color=(0, 0, 255), thickness=2, lineType=cv2.LINE_AA)
  
     cv2.imshow("Image", img)
     cv2.waitKey(1)
