@@ -49,21 +49,24 @@ while True:
         
         for box in boxes:
             
-            # Bounding Box
+            # Bounding Box coordinates
             x1, y1, x2, y2 = box.xyxy[0]
             x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
 
-            # Add if statements here to change color and do other functions if car crosses line
-            cv2.rectangle(img,(x1,y1),(x2,y2),(0,255,0),1)
-            
             # Confidence
             conf = math.ceil((box.conf[0] * 100)) / 100
-        
+
             # Class Name
             cls = int(box.cls[0])
-            className = classNames[cls]
+            className = classNames[cls] 
 
-            cvzone.putTextRect(img, f'{className} {conf}', (max(0, x1), max(35, y1)), scale=1, thickness=1, colorR=(144,238,144))
+            # Drawing the bouding box and detecting whether its over the boundary lines
+            if x2 >= 50 and x2 <= 500 and y2 >= 550 or x2 >= 780 and x1 <= 1230 and y2 >= 550:
+                cv2.rectangle(img, (x1,y1), (x2,y2), (0,0,255), 2)
+                # cvzone.putTextRect(img, f'{className} {conf}', (max(0, x1), max(35, y1)), scale=1, thickness=2, colorR=(76,71,255), colorT=(128, 128, 128))
+            else:
+                cv2.rectangle(img,(x1,y1),(x2,y2),(0,255,0),2)
+                # cvzone.putTextRect(img, f'{className} {conf}', (max(0, x1), max(35, y1)), scale=1, thickness=2, colorR=(144,238,144), colorT=(128, 128, 128))
  
     fps = 1 / (new_frame_time - prev_frame_time)
     prev_frame_time = new_frame_time
