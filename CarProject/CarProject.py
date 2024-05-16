@@ -37,10 +37,11 @@ while True:
     results = model(img, stream=True, device="mps") # uses metal (aka mac gpu) if you are using windows and have nvidea gpu, install cuda and config it accordingly
 
     # Draw lines to represent the boundaries for flagging nearby vehicles
-    leftLineFirst = (50, 550)
-    leftLineLast = (500, 550)
-    rightLineFirst = (780, 550)
-    rightLineLast = (1230, 550)
+    lineHeight = 550
+    leftLineFirst = (50, lineHeight)
+    leftLineLast = (500, lineHeight)
+    rightLineFirst = (780, lineHeight)
+    rightLineLast = (1230, lineHeight)
     cv2.line(img, leftLineFirst, leftLineLast, (255, 0, 0), 3)
     cv2.line(img, rightLineFirst, rightLineLast, (255, 0, 0), 3)
 
@@ -58,16 +59,40 @@ while True:
 
             # Class Name
             cls = int(box.cls[0])
-            className = classNames[cls] 
+            className = classNames[cls]
+
+            leftBlock = False
+            rightBlock = False
+            textBlock = "No blocking"
 
             # Drawing the bouding box and detecting whether its over the boundary lines
-            if x2 >= 50 and x2 <= 500 and y2 >= 550 or x2 >= 780 and x1 <= 1230 and y2 >= 550:
+            if x2 >= leftLineFirst[0] and x2 <= leftLineLast[0] and y2 >= lineHeight: # check if the left side is blocked
                 cv2.rectangle(img, (x1,y1), (x2,y2), (0,0,255), 2)
+                leftBlock = True
                 # cvzone.putTextRect(img, f'{className} {conf}', (max(0, x1), max(35, y1)), scale=1, thickness=2, colorR=(76,71,255), colorT=(128, 128, 128))
-            else:
+
+            elif x2 >= rightLineFirst[0] and x1 <= rightLineLast[0] and y2 >= lineHeight: # check if the right side is blocked
+                cv2.rectangle(img, (x1,y1), (x2,y2), (0,0,255), 2)
+                rightBlock = True
+                # cvzone.putTextRect(img, f'{className} {conf}', (max(0, x1), max(35, y1)), scale=1, thickness=2, colorR=(76,71,255), colorT=(128, 128, 128))
+
+            else: # nothing is blocking the car
                 cv2.rectangle(img,(x1,y1),(x2,y2),(0,255,0),2)
                 # cvzone.putTextRect(img, f'{className} {conf}', (max(0, x1), max(35, y1)), scale=1, thickness=2, colorR=(144,238,144), colorT=(128, 128, 128))
- 
+
+            # Writing the status of the car
+            if leftBlock and rightBlock:
+                textBlock = "Status: Both sides blocked"
+            elif leftBlock and rightBlock == False:
+                textBlock = "Status: Left side blocked"
+            elif leftBlock == False and rightBlock:
+                textBlock = "Status: Right side blocked"
+
+            # cvzone.putTextRect(img, textBlock, (1000, 35), scale=1, thickness=2, colorR=(128,128,128), colorT=(0, 0, 255))
+            cv2.putText(img, textBlock, (1000, 40), fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1, color=(0, 0, 255), thickness=2, lineType=cv2.LINE_AA)
+
+
+
     fps = 1 / (new_frame_time - prev_frame_time)
     prev_frame_time = new_frame_time
     cv2.putText(img, f'FPS: {int(fps)}', (30, 40), fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1, color=(0, 0, 255), thickness=2, lineType=cv2.LINE_AA)
