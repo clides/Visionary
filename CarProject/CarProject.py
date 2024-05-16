@@ -45,6 +45,10 @@ while True:
     cv2.line(img, leftLineFirst, leftLineLast, (255, 0, 0), 3)
     cv2.line(img, rightLineFirst, rightLineLast, (255, 0, 0), 3)
 
+    leftBlock = False
+    rightBlock = False
+    textBlock = "No blocking"
+
     for r in results:
         boxes = r.boxes
         
@@ -61,9 +65,7 @@ while True:
             cls = int(box.cls[0])
             className = classNames[cls]
 
-            leftBlock = False
-            rightBlock = False
-            textBlock = "No blocking"
+            
 
             # Drawing the bouding box and detecting whether its over the boundary lines
             if x2 >= leftLineFirst[0] and x2 <= leftLineLast[0] and y2 >= lineHeight: # check if the left side is blocked
@@ -88,9 +90,11 @@ while True:
             elif leftBlock == False and rightBlock:
                 textBlock = "Status: Right side blocked"
 
-            # cvzone.putTextRect(img, textBlock, (1000, 35), scale=1, thickness=2, colorR=(128,128,128), colorT=(0, 0, 255))
-            cv2.putText(img, textBlock, (1000, 40), fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1, color=(0, 0, 255), thickness=2, lineType=cv2.LINE_AA)
+            
 
+
+    # cvzone.putTextRect(img, textBlock, (1000, 35), scale=1, thickness=2, colorR=(128,128,128), colorT=(0, 0, 255))
+    cv2.putText(img, textBlock, (800, 40), fontFace=cv2.FONT_HERSHEY_DUPLEX, fontScale=1, color=(0, 0, 255), thickness=2, lineType=cv2.LINE_AA)
 
 
     fps = 1 / (new_frame_time - prev_frame_time)
